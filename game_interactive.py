@@ -1,5 +1,6 @@
 import game_display as gd
-from gi.repository import Gtk
+import game
+from gi.repository import Gtk, Gdk
 
 #----------------------------------------------------------------------------------------------------------------------------------
 
@@ -15,6 +16,7 @@ class GameInteractive(gd.GameDisplay):
     self.win = Gtk.Window()
     self.win.set_title("2048 Interactive")
     self.win.set_default_size(gd.gridRight + gd.rightBorder, gd.gridBottom + gd.bottomBorder + buttonHeight)
+    self.win.connect("key-press-event", self._keyPressed)
 
     grid = Gtk.Grid()
     self.win.add(grid)
@@ -39,6 +41,12 @@ class GameInteractive(gd.GameDisplay):
     grid.attach(align, 1, 1, 1, 1)
 
     self.win.show_all()
+
+  def _keyPressed(self, widget, event):
+    """Deals with keys pressed to make moves"""
+    keyname = Gdk.keyval_name(event.keyval).lower()
+    if (keyname in game.moves.values()):
+      self.makeMove(keyname)
 
   def _startNew(self, button):
     """Starts a new game."""
