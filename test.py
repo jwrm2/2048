@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import game_display
+import game_interactive
 from gi.repository import Gtk
 
-gd = game_display.GameDisplay()
-gd.win.connect('destroy', Gtk.main_quit)
+gi = game_interactive.GameInteractive()
+gi.win.connect('destroy', Gtk.main_quit)
 
 Gtk.main()
