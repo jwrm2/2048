@@ -64,7 +64,7 @@ class GameDisplay(game.Game):
 
 #----------------------------------------------------------------------------------------------------------------------------------
 
-backgroundColor = utils.HexColor("0xFAF8EF")
+backgroundColor = utils.HexColor("0xEDEDED")
 gridColor       = utils.HexColor("0xBBADA0")
 squareColor     = utils.HexColor("0xCDC1B4")
 labelColor      = [utils.HexColor("0x776E65"), utils.HexColor("0xF9F6F2")]

@@ -1,6 +1,8 @@
 import game_display as gd
 from gi.repository import Gtk
 
+#----------------------------------------------------------------------------------------------------------------------------------
+
 class GameInteractive(gd.GameDisplay):
   """A game of 2048 with a display and interactive moving."""
 
@@ -14,30 +16,38 @@ class GameInteractive(gd.GameDisplay):
     self.win.set_title("2048 Interactive")
     self.win.set_default_size(gd.gridRight + gd.rightBorder, gd.gridBottom + gd.bottomBorder + buttonHeight)
 
-    hbox = Gtk.Box(spacing=6)
-    self.win.add(hbox)
+    grid = Gtk.Grid()
+    self.win.add(grid)
 
-    self.da = Gtk.DrawingArea()
-    self.da.set_size_request(gd.gridRight + gd.rightBorder, gd.gridBottom + gd.bottomBorder)
-    self.da.connect("draw", self.updateDisplay)
-    hbox.pack_start(self.da, True, True, 0)
+    da = Gtk.DrawingArea()
+    da.set_size_request(gd.gridRight + gd.rightBorder, gd.gridBottom + gd.bottomBorder)
+    da.connect("draw", self.updateDisplay)
+    grid.attach(da, 0, 0, 2, 1)
 
     button = Gtk.Button.new_with_label("New Game")
     button.connect("clicked", self._startNew)
-    hbox.pack_start(button, True, True, 0)
+    align = Gtk.Alignment()
+    align.set(xalign=0.5, yalign=0.5, xscale=0.0, yscale=0.0)
+    align.add(button)
+    grid.attach(align, 0, 1, 1, 1)
 
     button = Gtk.Button.new_with_label("Save and Quit")
     button.connect("clicked", self._saveQuit)
-    hbox.pack_start(button, True, True, 0)
+    align = Gtk.Alignment()
+    align.set(xalign=0.5, yalign=0.5, xscale=0.0, yscale=0.0)
+    align.add(button)
+    grid.attach(align, 1, 1, 1, 1)
 
     self.win.show_all()
 
-  def _startNew(self):
+  def _startNew(self, button):
     """Starts a new game."""
     self.newGame()
-    self.updateDisplay()
+    self.win.queue_draw()
 
-  def _saveQuit(self):
+  def _saveQuit(self, button):
     """Writes the game data to a file and exits."""
 
-buttonHeight = 50
+#----------------------------------------------------------------------------------------------------------------------------------
+
+buttonHeight = 30
