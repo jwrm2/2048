@@ -32,7 +32,7 @@ class GameDisplay(game.Game):
     # The grid
     cr.set_line_width(gridLineWidth)
     cr.set_source_rgb(gridColor.getRedF(), gridColor.getGreenF(), gridColor.getBlueF())
-    for i in range(self.gridSize+1):
+    for i in range(self.grid_size+1):
       cr.move_to(gridLeft + i*tileSize + (i-0.5)*gridLineWidth, gridTop - gridLineWidth)
       cr.line_to(gridLeft + i*tileSize + (i-0.5)*gridLineWidth, gridBottom - gridLineWidth/2)
       cr.stroke_preserve()
@@ -41,8 +41,8 @@ class GameDisplay(game.Game):
       cr.stroke_preserve()
 
     # The tiles
-    for i in range(self.gridSize):
-      for j in range(self.gridSize):
+    for i in range(self.grid_size):
+      for j in range(self.grid_size):
         if(self.grid[i][j] != 0):
           color = tileColors[self.grid[i][j]]
           cr.set_source_rgb(color.getRedF(), color.getGreenF(), color.getBlueF())
@@ -51,8 +51,8 @@ class GameDisplay(game.Game):
           cr.fill()
 
     # The tile labels
-    for i in range(self.gridSize):
-      for j in range(self.gridSize):
+    for i in range(self.grid_size):
+      for j in range(self.grid_size):
         if(self.grid[i][j] != 0):
           color = labelColor[labelDict[self.grid[i][j]]]
           cr.set_source_rgb(color.getRedF(), color.getGreenF(), color.getBlueF())

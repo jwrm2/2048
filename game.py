@@ -1,183 +1,217 @@
-import random, utils
-from math import log
+import random
+import utils
 
-#----------------------------------------------------------------------------------------------------------------------------------
 
 class Game(object):
-  """A game of 2048."""
+    """A game of 2048."""
 
-  def __init__(self):
-    """Creates the game and sets up the board."""
-    self.gridSize = 4
-    self.newGame()
+    def __init__(self):
+        """Creates the game and sets up the board."""
+        self.grid = [[0]*4]*4
+        self.grid_size = 4
+        self.playing = True
+        self.score = 0
+        self.new_game()
 
-  def gameOver(self):
-    """Makes necessary changes for the end of a game."""
-    self.playing = False
+    def game_over(self):
+        """Makes necessary changes for the end of a game."""
+        self.playing = False
 
-  def _getSequences(self, direction):
-    """Returns the four sequences in order for the specified move."""
-    if (direction == "left"):
-      seqs = [Sequence(self.gridSize, (self.grid[i,j] for i in range(self.gridSize))) for j in range(self.gridSize)]
-    elif (direction == "right"):
-      seqs = [Sequence(self.gridSize, (self.grid[i,j] for i in range(self.gridSize-1, -1, -1))) for j in range(self.gridSize)]
-    elif (direction == "up"):
-      seqs = [Sequence(self.gridSize, (self.grid[i,j] for j in range(self.gridSize))) for i in range(self.gridSize)]
-    elif (direction == "down"):
-      seqs = [Sequence(self.gridSize, (self.grid[i,j] for j in range(self.gridSize-1, -1, -1))) for i in range(self.gridSize)]
-    return seqs
+    def _get_sequences(self, direction):
+        """Returns the four sequences in order for the specified move."""
+        if direction == "left":
+            seqs = [Sequence(self.grid_size, (self.grid[i][j] for i in range(self.grid_size))) for j in
+                    range(self.grid_size)]
+        elif direction == "right":
+            seqs = [Sequence(self.grid_size, (self.grid[i][j] for i in range(self.grid_size - 1, -1, -1))) for j in
+                    range(self.grid_size)]
+        elif direction == "up":
+            seqs = [Sequence(self.grid_size, (self.grid[i][j] for j in range(self.grid_size))) for i in
+                    range(self.grid_size)]
+        elif direction == "down":
+            seqs = [Sequence(self.grid_size, (self.grid[i][j] for j in range(self.grid_size - 1, -1, -1))) for i in
+                    range(self.grid_size)]
+        else:
+            raise ValueError("%s is not a recognised direction" % direction)
+        return seqs
 
-  def getTile(self, x, y):
-    """Returns the value of the specified tile, or 0 if it is free."""
-    return self.grid[x][y]
+    def get_tile(self, x, y):
+        """Returns the value of a specified tile, or 0 if it is free..
 
-  def _isAvailable(self, x, y):
-    """Returns true is a space is free, false is occupied by a tile."""
-    return self.getTile(x, y) == 0
+        :param x: the x coordinate of the tile
+        :param y: the y coordinate of the tile
+        :return: the value of the specified tile, 0 or a power of two
+        """
+        return self.grid[x][y]
 
-  def makeMove(self, direction):
-    """Carries out a move in the specified direction."""
-    if not (direction in moves.values()):
-      raise ValueError("%s is not a recognised direction" % direction)
+    def _is_available(self, x, y):
+        """Returns true is a space is free, false is occupied by a tile.
 
-    if not self.playing:
-      raise utils.GameOverException("Attempting to make a move on a finished game")
+        Arguments:
+        @param x: the x coordinate of the tile
+        @param y: the y coordinate of the tile
+        @return: True or False for whether the specified tile is occupied
+        """
+        return self.get_tile(x, y) == 0
 
-    moveScore = 0
+    def make_move(self, direction):
+        """Carries out a move in the specified direction.
 
-    seqs = self._getSequences(direction)
-    for i in range(self.gridSize):
-      moveScore += seqs[i].makeMove()
-    self._setSequences(seqs)
-    self.score += moveScore
+        @param direction: left, right, up or down to specify the move direction
+        """
+        if not (direction in moves.values()):
+            raise ValueError("%s is not a recognised direction" % direction)
 
-    self._spawnTile()
-    if not self.testAvailableMoves():
-      self.gameOver()
+        if not self.playing:
+            raise utils.GameOverException("Attempting to make a move on a finished game")
 
-  def newGame(self):
-    """Creates a new game."""
-    self.score = 0
-    self.playing = True
-    self.grid = [[0 for i in range(self.gridSize)] for i in range(self.gridSize)]
-    self._spawnTile()
-    self._spawnTile()
+        move_score = 0
 
-  def _setSequences(self, seqs):
-    """Sets the grid to the pattern specified by seqs."""
+        seqs = self._get_sequences(direction)
+        for i in range(self.grid_size):
+            move_score += seqs[i].make_move()
+        self._set_sequences(seqs, direction)
+        self.score += move_score
 
-    if not self.playing:
-      raise utils.GameOverException("Attempting to make a change a the grid for a finished game")
+        self._spawn_tile()
+        if not self.test_available_moves():
+            self.game_over()
 
-    if(len(seqs) != self.gridSize):
-      raise ValueError("Number of sequences does not match the grid size")
-    for seq in seqs:
-      if(len(seq) != self.gridSize):
-        raise ValueError("Length of a sequence does not match the grid size")
+    def new_game(self):
+        """Creates a new game."""
+        self.score = 0
+        self.playing = True
+        self.grid = [[0]*4]*4
+        self._spawn_tile()
+        self._spawn_tile()
 
-    if (direction == "left"):
-      for x in range(self.gridSize):
-        for y in range(self.gridSize):
-          self.setTile(x, y, seqs[y].getValue(x))
-    elif (direction == "right"):
-      for x in range(self.gridSize-1, -1, -1):
-        for y in range(self.gridSize):
-          self.setTile(x, y, seqs[y].getValue(x))
-    elif (direction == "up"):
-      for x in range(self.gridSize):
-        for y in range(self.gridSize):
-          self.setTile(x, y, seqs[x].getValue(y))
-    elif (direction == "down"):
-      for x in range(self.gridSize):
-        for y in range(self.gridSize-1, -1, -1):
-          self.setTile(x, y, seqs[x].getValue(x))
-    return seqs
+    def _set_sequences(self, seqs, direction):
+        """Sets the grid to the pattern specified by seqs.
 
-  def _setTile(self, x, y, value):
-    """Sets the specified square to the value."""
+        Arguments:
+        @param seqs: the list of four sequences containing the current game state
+        @param direction: left, right, up or down to specify the move direction
+        """
 
-    if not self.playing:
-      raise utils.GameOverException("Attempting to make a change a tile for a finished game")
+        if not self.playing:
+            raise utils.GameOverException("Attempting to make a change a the grid for a finished game")
 
-    if not (utils.isPower(value, 2)) and value != 0:
-      raise ValueError("%i is not a power of 2 or zero" % value)
-    self.grid[x][y] = value
+        if len(seqs) != self.grid_size:
+            raise ValueError("Number of sequences does not match the grid size")
+        for seq in seqs:
+            if len(seq) != self.grid_size:
+                raise ValueError("Length of a sequence does not match the grid size")
 
-  def _spawnTile(self):
-    """Randomly spawns a new tile in an available space."""
+        if direction == "left":
+            for x in range(self.grid_size):
+                for y in range(self.grid_size):
+                    self._set_tile(x, y, seqs[y].get_value(x))
+        elif direction == "right":
+            for x in range(self.grid_size - 1, -1, -1):
+                for y in range(self.grid_size):
+                    self._set_tile(x, y, seqs[y].get_value(x))
+        elif direction == "up":
+            for x in range(self.grid_size):
+                for y in range(self.grid_size):
+                    self._set_tile(x, y, seqs[x].get_value(y))
+        elif direction == "down":
+            for x in range(self.grid_size):
+                for y in range(self.grid_size - 1, -1, -1):
+                    self._set_tile(x, y, seqs[x].get_value(x))
+        return seqs
 
-    if not self.playing:
-      raise utils.GameOverException("Attempting to make a spawn a tile for a finished game")
+    def _set_tile(self, x, y, value):
+        """Sets the specified square to the value."""
 
-    while (True):
-      x = random.randint(0,3)
-      y = random.randint(0,3)
-      if (self._isAvailable(x, y)):
-        break;
+        if not self.playing:
+            raise utils.GameOverException("Attempting to make a change a tile for a finished game")
 
-    if (random.random() < 0.1):
-      self._setTile(x, y, 4)
-    else:
-      self._setTile(x, y, 2)
+        if not (utils.isPower(value, 2)) and value != 0:
+            raise ValueError("%i is not a power of 2 or zero" % value)
+        self.grid[x][y] = value
 
-  def testAvailableMoves(self):
-    """Tests whether or not there are available moves."""
-    availableMoves = False
-    for direction in moves.values():
-      availableMoves = (availableMoves or self.testMove(direction))
-    return availableMoves
+    def _spawn_tile(self):
+        """Randomly spawns a new tile in an available space."""
 
-  def testMove(self, direction):
-    """Returns whether or not the move in the specified direction is legal."""
-    if not (direction in moves.values()):
-      raise ValueError("%s is not a recognised direction" % direction)
+        if not self.playing:
+            raise utils.GameOverException("Attempting to make a spawn a tile for a finished game")
 
-    if not self.playing:
-      raise utils.GameOverException("Attempting to make a test a move for a finished game")
+        x = -1
+        y = -1
 
-    moveScore = 0
-    seqs = self._getSequences(direction)
-    for i in range(self.gridSize):
-      moveScore += seqs[i].makeMove()
+        while True:
+            x = random.randint(0, 3)
+            y = random.randint(0, 3)
+            if self._is_available(x, y):
+                break
 
-    return (moveScore > 0)
+        if random.random() < 0.1:
+            self._set_tile(x, y, 4)
+        else:
+            self._set_tile(x, y, 2)
 
-#----------------------------------------------------------------------------------------------------------------------------------
+    def test_available_moves(self):
+        """Tests whether or not there are available moves."""
+        available_moves = False
+        for direction in moves.values():
+            available_moves = (available_moves or self.test_move(direction))
+        return available_moves
+
+    def test_move(self, direction):
+        """Returns whether or not the move in the specified direction is legal.
+
+        @param direction: left, right, up or down to specify the move direction
+        """
+        if not (direction in moves.values()):
+            raise ValueError("%s is not a recognised direction" % direction)
+
+        if not self.playing:
+            raise utils.GameOverException("Attempting to make a test a move for a finished game")
+
+        move_score = 0
+        seqs = self._get_sequences(direction)
+        for i in range(self.grid_size):
+            move_score += seqs[i].make_move()
+
+        return move_score > 0
+
 
 class Sequence:
-  """A row in the grid for the purpose of move making."""
+    """A row in the grid for the purpose of move making."""
 
-  def __init__(self, size, seqlist):
-    """Sets up the sequence."""
-    self.gridSize = size
-    self.seqList = seqlist
-    self.score = 0
+    def __init__(self, size, seq_list):
+        """Sets up the sequence."""
+        self.gridSize = size
+        self.seq_list = seq_list
+        self.score = 0
 
-  def getValue(self, i):
-    """Returns the value at index i."""
-    return self.seqList[i]
+    def get_value(self, i):
+        """Returns the value at index i.
 
-  def makeMove(self):
-    """Applies the move taking algorithm to the sequence, returning the score increase."""
+        @param i: the index
+        """
+        return self.seq_list[i]
 
-    self._shiftLeft()
-    for i in range(self.gridSize-1):
-      if(self.seqList[i] == self.seqList[i+1]):
-        self.seqList[i] *= 2
-        self.seqList[i+1] = 0
-        self.score += self.seqList[i]
-        self._shiftLeft()
+    def make_move(self):
+        """Applies the move taking algorithm to the sequence, returning the score increase."""
 
-    return self.score
+        self._shift_left()
+        for i in range(self.gridSize - 1):
+            if self.seq_list[i] == self.seq_list[i + 1]:
+                self.seq_list[i] *= 2
+                self.seq_list[i + 1] = 0
+                self.score += self.seq_list[i]
+                self._shift_left()
 
-  def _shiftLeft(self):
-    """Moves all elements to the left, filling up blanks"""
-    for i in range(self.gridSize):
-      if(self.seqList[i] == 0):
-        for j in range(i, self.gridSize-1):
-          self.seqList[j] = self.seqList[j+1]
-        self.seqList[self.gridSize-1] = 0
+        return self.score
 
-#----------------------------------------------------------------------------------------------------------------------------------
+    def _shift_left(self):
+        """Moves all elements to the left, filling up blanks"""
+        for i in range(self.gridSize):
+            if self.seq_list[i] == 0:
+                for j in range(i, self.gridSize - 1):
+                    self.seq_list[j] = self.seq_list[j + 1]
+                self.seq_list[self.gridSize - 1] = 0
+
 
 moves = {0: "left", 1: "right", 2: "up", 3: "down"}

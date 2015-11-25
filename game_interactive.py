@@ -46,11 +46,11 @@ class GameInteractive(gd.GameDisplay):
     """Deals with keys pressed to make moves"""
     keyname = Gdk.keyval_name(event.keyval).lower()
     if (keyname in game.moves.values()):
-      self.makeMove(keyname)
+      self.make_move(keyname)
 
   def _startNew(self, button):
     """Starts a new game."""
-    self.newGame()
+    self.new_game()
     self.win.queue_draw()
 
   def _saveQuit(self, button):
