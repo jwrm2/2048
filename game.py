@@ -1,3 +1,4 @@
+import copy
 import random
 import utils
 
@@ -7,8 +8,8 @@ class Game(object):
 
     def __init__(self):
         """Creates the game and sets up the board."""
-        self.grid = [[0]*4]*4
         self.grid_size = 4
+        self.grid = [[i*j*0 for i in range(self.grid_size)] for j in range(self.grid_size)]
         self.playing = True
         self.score = 0
         self.new_game()
@@ -20,16 +21,16 @@ class Game(object):
     def _get_sequences(self, direction):
         """Returns the four sequences in order for the specified move."""
         if direction == "left":
-            seqs = [Sequence(self.grid_size, (self.grid[i][j] for i in range(self.grid_size))) for j in
+            seqs = [Sequence(self.grid_size, [self.grid[i][j] for i in range(self.grid_size)]) for j in
                     range(self.grid_size)]
         elif direction == "right":
-            seqs = [Sequence(self.grid_size, (self.grid[i][j] for i in range(self.grid_size - 1, -1, -1))) for j in
+            seqs = [Sequence(self.grid_size, [self.grid[i][j] for i in range(self.grid_size - 1, -1, -1)]) for j in
                     range(self.grid_size)]
         elif direction == "up":
-            seqs = [Sequence(self.grid_size, (self.grid[i][j] for j in range(self.grid_size))) for i in
+            seqs = [Sequence(self.grid_size, [self.grid[i][j] for j in range(self.grid_size)]) for i in
                     range(self.grid_size)]
         elif direction == "down":
-            seqs = [Sequence(self.grid_size, (self.grid[i][j] for j in range(self.grid_size - 1, -1, -1))) for i in
+            seqs = [Sequence(self.grid_size, [self.grid[i][j] for j in range(self.grid_size - 1, -1, -1)]) for i in
                     range(self.grid_size)]
         else:
             raise ValueError("%s is not a recognised direction" % direction)
@@ -69,7 +70,8 @@ class Game(object):
 
         seqs = self._get_sequences(direction)
         for i in range(self.grid_size):
-            move_score += seqs[i].make_move()
+            s, v = seqs[i].make_move()
+            move_score += s
         self._set_sequences(seqs, direction)
         self.score += move_score
 
@@ -81,7 +83,7 @@ class Game(object):
         """Creates a new game."""
         self.score = 0
         self.playing = True
-        self.grid = [[0]*4]*4
+        self.grid = [[i*j*0 for i in range(self.grid_size)] for j in range(self.grid_size)]
         self._spawn_tile()
         self._spawn_tile()
 
@@ -99,7 +101,7 @@ class Game(object):
         if len(seqs) != self.grid_size:
             raise ValueError("Number of sequences does not match the grid size")
         for seq in seqs:
-            if len(seq) != self.grid_size:
+            if seq.get_size() != self.grid_size:
                 raise ValueError("Length of a sequence does not match the grid size")
 
         if direction == "left":
@@ -168,12 +170,13 @@ class Game(object):
         if not self.playing:
             raise utils.GameOverException("Attempting to make a test a move for a finished game")
 
-        move_score = 0
+        valid = False
         seqs = self._get_sequences(direction)
         for i in range(self.grid_size):
-            move_score += seqs[i].make_move()
+            s, v = seqs[i].make_move()
+            valid = (valid or v)
 
-        return move_score > 0
+        return valid
 
 
 class Sequence:
@@ -181,8 +184,9 @@ class Sequence:
 
     def __init__(self, size, seq_list):
         """Sets up the sequence."""
-        self.gridSize = size
+        self.grid_size = size
         self.seq_list = seq_list
+        self.seq_orig = copy.copy(seq_list)
         self.score = 0
 
     def get_value(self, i):
@@ -192,26 +196,32 @@ class Sequence:
         """
         return self.seq_list[i]
 
+    def get_size(self):
+        """Returns the length of the sequence."""
+        return self.grid_size
+
     def make_move(self):
-        """Applies the move taking algorithm to the sequence, returning the score increase."""
+        """Applies the move taking algorithm to the sequence, returning the score and whether the move is valid"""
 
         self._shift_left()
-        for i in range(self.gridSize - 1):
+        for i in range(self.grid_size - 1):
             if self.seq_list[i] == self.seq_list[i + 1]:
                 self.seq_list[i] *= 2
                 self.seq_list[i + 1] = 0
                 self.score += self.seq_list[i]
                 self._shift_left()
 
-        return self.score
+        valid = not (self.seq_list == self.seq_orig)
+
+        return self.score, valid
 
     def _shift_left(self):
         """Moves all elements to the left, filling up blanks"""
-        for i in range(self.gridSize):
+        for i in range(self.grid_size):
             if self.seq_list[i] == 0:
-                for j in range(i, self.gridSize - 1):
+                for j in range(i, self.grid_size - 1):
                     self.seq_list[j] = self.seq_list[j + 1]
-                self.seq_list[self.gridSize - 1] = 0
+                self.seq_list[self.grid_size - 1] = 0
 
 
 moves = {0: "left", 1: "right", 2: "up", 3: "down"}
