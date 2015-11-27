@@ -67,15 +67,19 @@ class Game(object):
             raise utils.GameOverException("Attempting to make a move on a finished game")
 
         move_score = 0
-
+        valid = False
         seqs = self._get_sequences(direction)
+
         for i in range(self.grid_size):
             s, v = seqs[i].make_move()
             move_score += s
-        self._set_sequences(seqs, direction)
-        self.score += move_score
+            valid = (valid or v)
 
-        self._spawn_tile()
+        if valid:
+          self._set_sequences(seqs, direction)
+          self.score += move_score
+          self._spawn_tile()
+
         if not self.test_available_moves():
             self.game_over()
 
@@ -109,17 +113,17 @@ class Game(object):
                 for y in range(self.grid_size):
                     self._set_tile(x, y, seqs[y].get_value(x))
         elif direction == "right":
-            for x in range(self.grid_size - 1, -1, -1):
+            for x in range(self.grid_size):
                 for y in range(self.grid_size):
-                    self._set_tile(x, y, seqs[y].get_value(x))
+                    self._set_tile(self.grid_size - x - 1, y, seqs[y].get_value(x))
         elif direction == "up":
             for x in range(self.grid_size):
                 for y in range(self.grid_size):
                     self._set_tile(x, y, seqs[x].get_value(y))
         elif direction == "down":
             for x in range(self.grid_size):
-                for y in range(self.grid_size - 1, -1, -1):
-                    self._set_tile(x, y, seqs[x].get_value(x))
+                for y in range(self.grid_size):
+                    self._set_tile(x, self.grid_size - y - 1, seqs[x].get_value(y))
         return seqs
 
     def _set_tile(self, x, y, value):
@@ -217,11 +221,9 @@ class Sequence:
 
     def _shift_left(self):
         """Moves all elements to the left, filling up blanks"""
-        for i in range(self.grid_size):
-            if self.seq_list[i] == 0:
-                for j in range(i, self.grid_size - 1):
-                    self.seq_list[j] = self.seq_list[j + 1]
-                self.seq_list[self.grid_size - 1] = 0
-
+        while 0 in self.seq_list:
+              self.seq_list.remove(0)
+        while len(self.seq_list) < self.grid_size:
+            self.seq_list.append(0)
 
 moves = {0: "left", 1: "right", 2: "up", 3: "down"}

@@ -50,6 +50,7 @@ class GameInteractive(gd.GameDisplay):
         if key_name in game.moves.values():
             self.make_move(key_name)
         self.win.queue_draw()
+        return True
 
     def _start_new(self, button):
         """Starts a new game."""
