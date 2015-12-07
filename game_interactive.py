@@ -1,5 +1,8 @@
 from gi.repository import Gtk
 from gi.repository import Gdk
+import os
+from simplecrypt import encrypt, decrypt
+from utils import get_password
 
 import game
 import game_display as gd
@@ -11,6 +14,8 @@ class GameInteractive(gd.GameDisplay):
     def __init__(self):
         """Initialise the game and the display."""
         super(GameInteractive, self).__init__()
+        if os.path.isfile(save_file):
+            self._load_save()
 
     def _create_display(self):
         """Sets up the window ready for display."""
@@ -43,6 +48,9 @@ class GameInteractive(gd.GameDisplay):
 
         self.win.show_all()
 
+    def _load_save(self):
+        """Loads the saved game file."""
+
     def _key_pressed(self, widget, event):
         """Deals with keys pressed to make moves"""
         del widget
@@ -62,14 +70,19 @@ class GameInteractive(gd.GameDisplay):
         """Writes the game data to a file and exits."""
         del button
 
-        save = open("save_game", 'w')
-        save.write(str(self.score) + '\n')
+        save = open(save_file, 'w')
+        save_string = ""
+        save_string += str(self.score) + '\n'
         for i in range(self.grid_size):
             for j in range(self.grid_size):
-                save.write(str(self.grid[i][j]) + '\n')
+                save_string += str(self.grid[i][j]) + '\n'
+
+        cipher_text = encrypt(get_password(), save_string)
+        save.write(cipher_text)
         save.close()
 
         Gtk.main_quit()
 
 
 buttonHeight = 30
+save_file = "save_game"

@@ -39,9 +39,9 @@ class Game(object):
     def get_tile(self, x, y):
         """Returns the value of a specified tile, or 0 if it is free..
 
-        :param x: the x coordinate of the tile
-        :param y: the y coordinate of the tile
-        :return: the value of the specified tile, 0 or a power of two
+        @param x: the x coordinate of the tile
+        @param y: the y coordinate of the tile
+        @return: the value of the specified tile, 0 or a power of two
         """
         return self.grid[x][y]
 
@@ -132,7 +132,7 @@ class Game(object):
         if not self.playing:
             raise utils.GameOverException("Attempting to make a change a tile for a finished game")
 
-        if not (utils.isPower(value, 2)) and value != 0:
+        if not (utils.is_power(value, 2)) and value != 0:
             raise ValueError("%i is not a power of 2 or zero" % value)
         self.grid[x][y] = value
 

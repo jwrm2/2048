@@ -35,12 +35,12 @@ class GameDisplay(game.Game):
         del w
 
         # Background color and cleaning
-        cr.set_source_rgb(backgroundColor.getRedF(), backgroundColor.getGreenF(), backgroundColor.getBlueF())
+        cr.set_source_rgb(backgroundColor.get_red_f(), backgroundColor.get_green_f(), backgroundColor.get_blue_f())
         cr.paint()
 
         # The grid
         cr.set_line_width(gridLineWidth)
-        cr.set_source_rgb(gridColor.getRedF(), gridColor.getGreenF(), gridColor.getBlueF())
+        cr.set_source_rgb(gridColor.get_red_f(), gridColor.get_green_f(), gridColor.get_blue_f())
         for i in range(self.grid_size+1):
             cr.move_to(gridLeft + i*tileSize + (i-0.5)*gridLineWidth, gridTop - gridLineWidth)
             cr.line_to(gridLeft + i*tileSize + (i-0.5)*gridLineWidth, gridBottom - gridLineWidth/2)
@@ -54,7 +54,7 @@ class GameDisplay(game.Game):
             for j in range(self.grid_size):
                 if self.grid[i][j] != 0:
                     color = tileColors[self.grid[i][j]]
-                    cr.set_source_rgb(color.getRedF(), color.getGreenF(), color.getBlueF())
+                    cr.set_source_rgb(color.get_red_f(), color.get_green_f(), color.get_blue_f())
                     cr.rectangle(gridLeft + gridLineWidth*i + tileSize*i,     gridTop + gridLineWidth*j + tileSize*j,
                                  tileSize, tileSize)
                     cr.fill()
@@ -64,7 +64,7 @@ class GameDisplay(game.Game):
             for j in range(self.grid_size):
                 if self.grid[i][j] != 0:
                     color = labelColor[labelDict[self.grid[i][j]]]
-                    cr.set_source_rgb(color.getRedF(), color.getGreenF(), color.getBlueF())
+                    cr.set_source_rgb(color.get_red_f(), color.get_green_f(), color.get_blue_f())
                     cr.select_font_face("Helvetica", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
                     cr.set_font_size(labelFontSize[self.grid[i][j]])
                     (x, y, width, height, dx, dy) = cr.text_extents(str(self.grid[i][j]))
