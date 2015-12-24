@@ -36,6 +36,14 @@ class Game(object):
             raise ValueError("%s is not a recognised direction" % direction)
         return seqs
 
+    def get_score(self):
+        """:returns the current score"""
+        return self.score
+
+    def get_playing(self):
+        """:returns whether the game is still playable"""
+        return self.playing
+
     def get_tile(self, x, y):
         """Returns the value of a specified tile, or 0 if it is free..
 
@@ -76,9 +84,9 @@ class Game(object):
             valid = (valid or v)
 
         if valid:
-          self._set_sequences(seqs, direction)
-          self.score += move_score
-          self._spawn_tile()
+            self._set_sequences(seqs, direction)
+            self.score += move_score
+            self._spawn_tile()
 
         if not self.test_available_moves():
             self.game_over()
