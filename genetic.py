@@ -72,6 +72,10 @@ def run_breeding(pop, sel, grid_size, hidden_list, drift, sigma, gen, num, proc)
             for k in range(len(fits)):
                 fitnesses[fits[k]] = population[j*proc + k]
 
+            pool.close()
+            pool.terminate()
+            pool.join()
+
         # Select the best controllers
         breeding_population = []
         for key in sorted(fitnesses, reverse=True):

@@ -17,4 +17,4 @@
 
 import genetic
 
-genetic.run_breeding(pop=10, sel=3, grid_size=4, hidden_list=[16, 16], drift=0.1, sigma=0.1, gen=10, num=10, proc=2)
+genetic.run_breeding(pop=100, sel=10, grid_size=4, hidden_list=[16, 16], drift=0.1, sigma=0.1, gen=10, num=10, proc=2)
