@@ -42,7 +42,7 @@ class Controller(object):
         @param drift scales the size of mutation to apply
         """
         for i in range(self.net.params.size):
-            self.net.params[i] += (random.random() - 1) * drift
+            self.net.params[i] += (random.random() - 0.5) * drift
 
 
 def run_game(cont):
