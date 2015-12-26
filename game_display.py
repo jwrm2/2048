@@ -26,7 +26,11 @@ class GameDisplay(game.Game):
         self.win.show_all()
 
     def make_move(self, direction):
-        """Carries out a move in the specified direction and queues a display update."""
+        """
+        Carries out a move in the specified direction and queues a display update.
+
+        @param direction: which direction to move in
+        """
         super(GameDisplay, self).make_move(direction)
         self.win.queue_draw()
 

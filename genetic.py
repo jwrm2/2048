@@ -1,22 +1,24 @@
 import controller
+from multiprocessing import Pool
 import random
 
 
-def breed(parent1, parent2, sigma):
+def breed(parent1, parent2, sigma, num):
     """
     Breeds two controllers to create a child.
     The dimensions of the nets of the two parents must match.
     The parameter of the child is drawn from a normal distribution, with mean given by the average of the
     parental values and variance as specified.
 
-    :param parent1: first parent
-    :param parent2: second parent
-    :param sigma: standard deviation of the normal distribution
-    :returns child: a blending of the two parents
+    @param parent1: first parent
+    @param parent2: second parent
+    @param sigma: standard deviation of the normal distribution
+    @param num: the number of games to average the fitness over
+    @return child: a blending of the two parents
     """
     if parent1.net.params.shape != parent2.net.params.shape:
         raise ValueError("Can't breed nets: they are not the same shape")
-    child = c.Controller(1, [1])
+    child = controller.Controller(1, [1], num)
     child.net = parent1.net.copy()
     for i in range(child.net.params.size):
         mu = (parent1.net.params[i] + parent2.net.params[i]) / 2
@@ -25,7 +27,7 @@ def breed(parent1, parent2, sigma):
     return child
 
 
-def run_breeding(pop, sel, grid_size, hidden_list, drift, sigma, gen, num):
+def run_breeding(pop, sel, grid_size, hidden_list, drift, sigma, gen, num, proc):
     """
     Runs a complete simulation, breeding the nets.
 
@@ -37,11 +39,12 @@ def run_breeding(pop, sel, grid_size, hidden_list, drift, sigma, gen, num):
     @param sigma: determines how much sexual variation in each child
     @param gen: number of generation to run
     @param num: number of runs to average over when calculating fitness
+    @param proc: the number of different threads to use when evaluating fitnesses
     """
     # Generate the initial population
     population = []
     for i in range(pop):
-        population.append(controller.Controller(grid_size, hidden_list))
+        population.append(controller.Controller(grid_size, hidden_list, num))
 
     best_fitness = 0
     best_params = []
@@ -55,8 +58,17 @@ def run_breeding(pop, sel, grid_size, hidden_list, drift, sigma, gen, num):
 
         # Get fitness for each controller
         fitnesses = {}
-        for c in population:
-            fitnesses[c.get_fitness()] = c
+        for j in range(pop/proc + 1):
+            if proc*(j + 1) <= pop:
+                p = proc
+            else:
+                p = pop - j*proc
+            pool = Pool(p)
+            fits = pool.map(controller.Controller.get_fitness, population[j*proc:j*proc + p])
+            for k in range(len(fits)):
+                fitnesses[population[]]
+
+            fitnesses[population[j].get_fitness(num)] = population[j]
 
         # Select the best controllers
         breeding_population = []
@@ -84,11 +96,10 @@ def run_breeding(pop, sel, grid_size, hidden_list, drift, sigma, gen, num):
             print "Breeding child from parent " + str(p1) + " and " + str(p2)
             child = breed(breeding_population[p1], breeding_population[p2], sigma)
             child.mutate(drift)
+            population.append(child)
 
         print "Best population fitness: " + str(pop_best_fitness)
         print "Best population parameters: " + str(pop_best_params)
         print "Best fitness: " + str(best_fitness)
         print "Best parameters: " + str(best_params)
         print "END GENERATION " + str(i)
-
-

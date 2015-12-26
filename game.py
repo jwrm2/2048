@@ -230,7 +230,7 @@ class Sequence:
     def _shift_left(self):
         """Moves all elements to the left, filling up blanks"""
         while 0 in self.seq_list:
-              self.seq_list.remove(0)
+            self.seq_list.remove(0)
         while len(self.seq_list) < self.grid_size:
             self.seq_list.append(0)
 

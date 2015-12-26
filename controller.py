@@ -9,12 +9,14 @@ import random
 class Controller(object):
     """A neural net for deciding which step to take next."""
 
-    def __init__(self, grid_size, hidden_list):
+    def __init__(self, grid_size, hidden_list, num):
         """Sets up the neural network.
 
         @param grid_size: the size of the grid, for specifying the input layer.
         @param hidden_list: a list containing the number of nodes in each hidden layer.
+        @param num: the number of games to average the fitness over
         """
+        self.num = num
         self.net = FeedForwardNetwork()
 
         in_layer = LinearLayer(grid_size*grid_size)
@@ -36,17 +38,16 @@ class Controller(object):
 
         self.net.sortModules()
 
-    def get_fitness(self, number):
+    def get_fitness(self):
         """
         Runs several games to get an average score for the fitness.
 
-        @param number: number of games to average over
         @return fitness: the average score
         """
         fitness = 0
-        for i in range(number):
+        for i in range(self.num):
             fitness += self.run_game()
-        fitness /= number
+        fitness /= self.num
         return fitness
 
     def mutate(self, drift):
@@ -76,4 +77,3 @@ class Controller(object):
                     decision[direction] = -100000
 
         return g.get_score()
-
