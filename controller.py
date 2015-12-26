@@ -9,14 +9,12 @@ import random
 class Controller(object):
     """A neural net for deciding which step to take next."""
 
-    def __init__(self, grid_size, hidden_list, num):
+    def __init__(self, grid_size, hidden_list):
         """Sets up the neural network.
 
         @param grid_size: the size of the grid, for specifying the input layer.
         @param hidden_list: a list containing the number of nodes in each hidden layer.
-        @param num: the number of games to average the fitness over
         """
-        self.num = num
         self.net = FeedForwardNetwork()
 
         in_layer = LinearLayer(grid_size*grid_size)
@@ -38,18 +36,6 @@ class Controller(object):
 
         self.net.sortModules()
 
-    def get_fitness(self):
-        """
-        Runs several games to get an average score for the fitness.
-
-        @return fitness: the average score
-        """
-        fitness = 0
-        for i in range(self.num):
-            fitness += self.run_game()
-        fitness /= self.num
-        return fitness
-
     def mutate(self, drift):
         """Performs a mutation by randomly altering each parameter in the net.
 
@@ -58,22 +44,60 @@ class Controller(object):
         for i in range(self.net.params.size):
             self.net.params[i] += (random.random() - 1) * drift
 
-    def run_game(self):
-        """Runs a game and returns the score.
 
-        @return the score of the game
-        """
-        g = game.Game()
+def run_game(cont):
+    """Runs a game and returns the score.
 
-        while g.get_playing():
-            input_list = [item for sub in g.grid for item in sub]
-            decision = self.net.activate(input_list)
-            for i in range(4):
-                direction = where(decision == max(decision))[0][0]
-                if g.test_move(game.moves[direction]):
-                    g.make_move(game.moves[direction])
-                    break
-                else:
-                    decision[direction] = -100000
+    @param cont: the controller to test
+    @return the score of the game
+    """
+    g = game.Game()
 
-        return g.get_score()
+    while g.get_playing():
+        input_list = [item for sub in g.grid for item in sub]
+        decision = cont.net.activate(input_list)
+        for i in range(4):
+            direction = where(decision == max(decision))[0][0]
+            if g.test_move(game.moves[direction]):
+                g.make_move(game.moves[direction])
+                break
+            else:
+                decision[direction] = -100000
+
+    return g.get_score()
+
+
+def get_fitness(cont):
+    """
+    Runs several games to get an average score for the fitness.
+
+    @param cont: the controller to test
+    @return fitness: the average score
+    """
+    if get_num() == 0:
+        raise ValueError("The number of games to average fitness over has not been set.")
+    fitness = 0
+    for i in range(get_num()):
+        fitness += run_game(cont)
+    fitness /= get_num()
+    return fitness
+
+num = 0
+
+
+def set_num(n):
+    """
+    Sets the number of games to average fitness over.
+
+    @param n: the number of games
+    """
+    global num
+    num = n
+
+
+def get_num():
+    """
+    Returns the number of games to average fitness over.
+    @return: the number of games
+    """
+    return num

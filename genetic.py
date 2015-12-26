@@ -3,7 +3,7 @@ from multiprocessing import Pool
 import random
 
 
-def breed(parent1, parent2, sigma, num):
+def breed(parent1, parent2, sigma):
     """
     Breeds two controllers to create a child.
     The dimensions of the nets of the two parents must match.
@@ -13,12 +13,11 @@ def breed(parent1, parent2, sigma, num):
     @param parent1: first parent
     @param parent2: second parent
     @param sigma: standard deviation of the normal distribution
-    @param num: the number of games to average the fitness over
     @return child: a blending of the two parents
     """
     if parent1.net.params.shape != parent2.net.params.shape:
         raise ValueError("Can't breed nets: they are not the same shape")
-    child = controller.Controller(1, [1], num)
+    child = controller.Controller(1, [1])
     child.net = parent1.net.copy()
     for i in range(child.net.params.size):
         mu = (parent1.net.params[i] + parent2.net.params[i]) / 2
@@ -44,12 +43,13 @@ def run_breeding(pop, sel, grid_size, hidden_list, drift, sigma, gen, num, proc)
     # Generate the initial population
     population = []
     for i in range(pop):
-        population.append(controller.Controller(grid_size, hidden_list, num))
+        population.append(controller.Controller(grid_size, hidden_list))
 
     best_fitness = 0
     best_params = []
 
     # Loop over the number of generations
+    controller.set_num(num)
     for i in range(gen):
         print "BEGINNING GENERATION " + str(i)
 
@@ -63,12 +63,14 @@ def run_breeding(pop, sel, grid_size, hidden_list, drift, sigma, gen, num, proc)
                 p = proc
             else:
                 p = pop - j*proc
-            pool = Pool(p)
-            fits = pool.map(controller.Controller.get_fitness, population[j*proc:j*proc + p])
-            for k in range(len(fits)):
-                fitnesses[population[]]
+            if p == 0:
+                break
 
-            fitnesses[population[j].get_fitness(num)] = population[j]
+            pool = Pool(p)
+            print "Calculating fitness for member " + str(j*proc) + " to " + str(j*proc + p - 1)
+            fits = pool.map(controller.get_fitness, population[j*proc:j*proc + p])
+            for k in range(len(fits)):
+                fitnesses[fits[k]] = population[j*proc + k]
 
         # Select the best controllers
         breeding_population = []
